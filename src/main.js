@@ -8,7 +8,8 @@ let app;
 
 window.onload = function(){
 	app = new App();
-	app.setCutSize(35,21,1200,898);
+	// app.setCutSize(35,21,1200,898);
+	app.setCutSize(0,0,871,672);
 };
 
 
@@ -22,7 +23,7 @@ class App{
 		this.originalContext = this.originalCanvas.getContext("2d");
 
 		this.adjustedCanvas = document.querySelector("#adjusted");
-		this.adjustedContext = this.adjustedCanvas.getContext("2d");
+		this.adjustedContext = this.adjustedCanvas.getContext("2d",{ willReadFrequently: true });
 
 		this.infoCanvas = document.querySelector("#compare-info");
 		this.infoContext = this.infoCanvas.getContext("2d");
@@ -57,6 +58,7 @@ class App{
 				audio: false,
 			})
 			.then((stream) => {
+				console.log(stream);
 				this.video.srcObject = stream;
 				this.video.play();
 			}).catch(e => console.log(e));
@@ -73,7 +75,6 @@ class App{
 		this.originalCanvas.addEventListener("mouseup",e => {
 			this.drag.isDragging = false;
 			this.drag.end = this.calcPosOnCanvas(e);
-			console.log(this.drag.begin,this.drag.end)
 			const dragWidth = this.drag.end[0] - this.drag.begin[0];
 			const dragHeight = this.drag.end[1] - this.drag.begin[1];
 			const dragSize   = [dragWidth,dragHeight]
@@ -91,7 +92,6 @@ class App{
 		this.drawVideoToCanvas();
 		const info = this.main.measure(this.adjustedContext);
 
-		console.log(info);
 		const c = this.infoContext;
 		const sourceSize = this.main.sourceSize;
 
@@ -104,38 +104,18 @@ class App{
 		}
 
 		for(let i = 1;i < 6;i++){
-			c.strokeRect(info.closestPixels[i].pixel,sourceSize.height * i,sourceSize.width,sourceSize.height);
+			c.strokeRect(info.closestPixels[i].mostSimilarPos,sourceSize.height * i,sourceSize.width,sourceSize.height);
 		
 			let isReliable = true;
+
+			const match = parseInt(info.closestPixels[i].similarity * 100);
+			const mono = parseInt(info.closestPixels[i].monochromaticity * 100);
+			const speed = info.closestPixels[i].expectedSpeed.toFixed(1);
 			this.infoContext.font = "18px 'Kosugi Maru'"
-
-			if(info.closestPixels[i].diff > 800000){
-				c.fillStyle = "#ff0000";
-				isReliable = false;
-			}else{
-				c.fillStyle = "#000000";
-			}
-
-			c.fillText(" DIFF:" + info.closestPixels[i].diff,SHRINK_WIDTH + sourceSize.width + 20,sourceSize.height * i + 55);
-			
-			if(info.closestPixels[i].samePixels > 25600 * 0.9){
-				c.fillStyle = "#ff0000";
-				isReliable = false;
-			}else{
-				c.fillStyle = "#000000";
-			}
-			c.fillText(" MONO:" + info.closestPixels[i].samePixels,SHRINK_WIDTH + sourceSize.width + 20,sourceSize.height * i + 75);
-			
+			c.fillText(`MATCH: ${match}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 55);
+			c.fillText(` MONO: ${mono}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 75);
 			this.infoContext.font = "30px 'Kosugi Maru'"
-			if(!isReliable){
-				c.fillStyle = "#aaaaaa";
-				c.fillText(info.closestPixels[i].speed,SHRINK_WIDTH + sourceSize.width + 45,sourceSize.height * i + 30);
-				c.fillRect(SHRINK_WIDTH + sourceSize.width + 42,sourceSize.height * i + 18,67,2)
-			}else{
-				c.fillStyle = "#000000";
-				c.fillText(info.closestPixels[i].speed,SHRINK_WIDTH + sourceSize.width + 45,sourceSize.height * i + 30);
-			}
-		
+			c.fillText(speed,SHRINK_WIDTH + sourceSize.width + 45,sourceSize.height * i + 30);
 		}
 
 		if(this.drag.isDragging){
@@ -198,19 +178,19 @@ class Main{
 		this.sourceSize = {
 			width : parseInt(SHRINK_WIDTH  / 2),
 			height: parseInt(SHRINK_HEIGHT / 6),
+			pixelNumber: parseInt(SHRINK_WIDTH  / 2) * parseInt(SHRINK_HEIGHT / 6),
 		};
 	}
 	measure(adjustedContext){
-		
-		const closestPixels = [];
-		for(let i = 0;i < 6;i++){
+		const closestPixels = [[0,0,0,0]];
+		for(let i = 1;i < 6;i++){
 			const sourcePos  = {//比較元の左上座標
 				x: SHRINK_WIDTH - this.sourceSize.width,//右寄せ
 				y: i * this.sourceSize.height
 			};
 			// const compareStart = Math.round(sourcePos.x - 51.5 * SHRINK_WIDTH / 256);
 			// const compareStop  = Math.round(sourcePos.x - 46.5 * SHRINK_WIDTH / 256);
-			const compareStart = Math.round(sourcePos.x - 102 * SHRINK_WIDTH / 256);
+			const compareStart = Math.round(sourcePos.x - 65 * SHRINK_WIDTH / 256);
 			const compareStop  = Math.round(sourcePos.x);
 
 			const evals = [];
@@ -218,39 +198,45 @@ class Main{
 			
 			for(let x = compareStart;x <= compareStop;x++){
 				const target = adjustedContext.getImageData(x,sourcePos.y,this.sourceSize.width,this.sourceSize.height);	//比較先
-				let sumOfPixelDiff = 0;	//画素ごとの色差の和
+				let matchedPixels = 0;	//一致したピクセルの数
 				for(let i = 0;i < source.data.length;i+=4){
-					const pixelDiff = 
+					const colorDiff = 
 						Math.abs(target.data[i] - source.data[i])
 					  + Math.abs(target.data[i + 1] - source.data[i + 1])
 					  + Math.abs(target.data[i + 2] - source.data[i + 2]);
-					sumOfPixelDiff += pixelDiff;
+					if(colorDiff < 15){	//画素値の差が15以下
+						matchedPixels += 1;
+					}
 				}
 				
-				evals.push([x,sumOfPixelDiff]);
+				evals.push([x,matchedPixels]);
 			}
-			const countSamePixels = () => {	//単色画像との差を調べる
-				//左上のピクセル
+			const countSameColorPixels = () => {	//単色画像との差を調べる
+				//比較対象: 左上のピクセル
 				const mono = this.old.data.slice(4 * this.sourceSize.width * this.sourceSize.height * i,4 * this.sourceSize.width * this.sourceSize.height * i + 4);
 				let samePixels = 0;	//画素値が±5以内のピクセル数
 				for(let i = 0;i < source.data.length;i+=4){
-					if(Math.abs(mono[0] - source.data[i]    )
-					 + Math.abs(mono[1] - source.data[i + 1])
-					 + Math.abs(mono[2] - source.data[i + 2]) <= 15){
+					const colorDiff =
+						  Math.abs(mono[0] - source.data[i])
+						+ Math.abs(mono[1] - source.data[i + 1])
+						+ Math.abs(mono[2] - source.data[i + 2]);
+
+					if(colorDiff <= 15){
 						samePixels += 1;
 					}
 				}
 				return samePixels;
 			};
-			evals.sort((a,b) => a[1] - b[1]);
-			const speed = (sourcePos.x - evals[0][0]) / (SHRINK_WIDTH / 256);
-			const samePixels = countSamePixels();
-			
+			evals.sort((a,b) => b[1] - a[1]);	//降順に並べる
+			const expectedSpeed = (sourcePos.x - evals[0][0]) / (SHRINK_WIDTH / 256);
+			const similarity = evals[0][1] / this.sourceSize.pixelNumber;
+			const monochromaticity = countSameColorPixels() / this.sourceSize.pixelNumber;
+
 			closestPixels.push({
-				pixel: evals[0][0],
-				diff: evals[0][1],
-				speed,
-				samePixels,
+				mostSimilarPos: evals[0][0],
+				expectedSpeed,
+				similarity,
+				monochromaticity,	//単色率
 			});
 		}
 
