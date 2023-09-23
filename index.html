@@ -6,16 +6,16 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="style.css">
 
-	<title>マント速度チェッカー</title>
+	<title>CapeMeasure</title>
 </head>
 <body>
-	<h1>マント速度チェッカー</h1>
+	<h1>CapeMeasure</h1>
 	<div id="app">
 		<div id="main">
 			<!-- <img id="cat" src="oosui.png"> -->
 			<span id="answer"></span>
 			
-			<canvas id="compare-info" width="1100" height="480"></canvas>
+			<canvas id="compare-info" width="500" height="224"></canvas>
 		</div>
 		<div id="config">
 			<h2>設定</h2>
@@ -24,7 +24,7 @@
 				<video id="video" autoplay></video>
 			</div>
 			<h3>Canvas</h3>
-			<canvas id="adjusted" width="640" height="480"></canvas>
+			<canvas id="adjusted" width="256" height="224"></canvas>
 			<h3>サイズ調整</h3>
 			<div id="cutsize-wrap">
 				left:   <input type="number" oninput="app.oninputCutSize()">

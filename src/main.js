@@ -1,15 +1,15 @@
 const VIDEO_WIDTH  = 1920;
 const VIDEO_HEIGHT = 1080;
 
-const SHRINK_WIDTH = 640;
-const SHRINK_HEIGHT = 480;
+const SHRINK_WIDTH = 256;
+const SHRINK_HEIGHT = 224;
 
 let app;
 
 window.onload = function(){
 	app = new App();
-	// app.setCutSize(35,21,1200,898);
-	app.setCutSize(0,0,871,672);
+	app.setCutSize(35,21,1200,898);
+	// app.setCutSize(0,0,871,672);
 };
 
 
@@ -99,7 +99,7 @@ class App{
 		c.putImageData(info.target,0,0);
 		c.putImageData(info.source,SHRINK_WIDTH + 20,0);
 		
-		for(let i = 0;i < 6;i++){	//枠線
+		for(let i = 1;i < 6;i++){	//枠線
 			c.fillRect(0,sourceSize.height * i,1100,2);
 		}
 
@@ -110,12 +110,12 @@ class App{
 
 			const match = parseInt(info.closestPixels[i].similarity * 100);
 			const mono = parseInt(info.closestPixels[i].monochromaticity * 100);
-			const speed = info.closestPixels[i].expectedSpeed.toFixed(1);
-			this.infoContext.font = "18px 'Kosugi Maru'"
-			c.fillText(`MATCH: ${match}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 55);
-			c.fillText(` MONO: ${mono}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 75);
+			const speed = info.closestPixels[i].expectedSpeed;
+			// this.infoContext.font = "18px 'Kosugi Maru'"
+			// c.fillText(`MATCH: ${match}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 55);
+			// c.fillText(` MONO: ${mono}%`,SHRINK_WIDTH + sourceSize.width + 30,sourceSize.height * i + 75);
 			this.infoContext.font = "30px 'Kosugi Maru'"
-			c.fillText(speed,SHRINK_WIDTH + sourceSize.width + 45,sourceSize.height * i + 30);
+			c.fillText(speed,SHRINK_WIDTH + sourceSize.width + 25,sourceSize.height * i + 32);
 		}
 
 		if(this.drag.isDragging){
@@ -188,9 +188,9 @@ class Main{
 				x: SHRINK_WIDTH - this.sourceSize.width,//右寄せ
 				y: i * this.sourceSize.height
 			};
-			// const compareStart = Math.round(sourcePos.x - 51.5 * SHRINK_WIDTH / 256);
-			// const compareStop  = Math.round(sourcePos.x - 46.5 * SHRINK_WIDTH / 256);
-			const compareStart = Math.round(sourcePos.x - 65 * SHRINK_WIDTH / 256);
+			// const compareStart = Math.round(sourcePos.x - 51 * SHRINK_WIDTH / 256);
+			// const compareStop  = Math.round(sourcePos.x - 46 * SHRINK_WIDTH / 256);
+			const compareStart = Math.round(sourcePos.x - 128 * SHRINK_WIDTH / 256);
 			const compareStop  = Math.round(sourcePos.x);
 
 			const evals = [];
