@@ -15,27 +15,29 @@
 			<!-- <img id="cat" src="oosui.png"> -->
 			<span id="answer"></span>
 			
-			<canvas id="compare-info" width="500" height="224"></canvas>
+			<canvas id="canvas-info" width="500" height="224"></canvas>
+			<br>
+		
+			<canvas style="display: none;" id="canvas-adjusted-main" width="256" height="224"></canvas>
 		</div>
-		<div id="config">
-			<h2>設定</h2>
-			<div class="debug">
-				<h3>Webカメラ入力 - デバッグ</h3>
-				<video id="video" autoplay></video>
-			</div>
-			<h3>Canvas</h3>
-			<canvas id="adjusted" width="256" height="224"></canvas>
+		
+		<video style="display: none;" id="video" autoplay></video>
+		
+		<button type="button" id="setting-button">設定</button>
+		<div style="display: none;" id="setting">
 			<h3>サイズ調整</h3>
-			<div id="cutsize-wrap">
-				left:   <input type="number" oninput="app.oninputCutSize()">
-				top:    <input type="number" oninput="app.oninputCutSize()">
-				width:  <input type="number" oninput="app.oninputCutSize()">
-				height: <input type="number" oninput="app.oninputCutSize()">
+			<div id="size-input-wrap">
+				<canvas id="canvas-full" width="1920" height="1080"></canvas>
+				<canvas id="canvas-adjusted-setting" width="256" height="224"></canvas>
+				left:   <input type="number" oninput="app.setting.onInput()">
+				top:    <input type="number" oninput="app.setting.onInput()">
+				width:  <input type="number" oninput="app.setting.onInput()">
+				height: <input type="number" oninput="app.setting.onInput()">
 			</div>
-			<canvas id="original" width="1920" height="1080"></canvas>
 		</div>
 	</div>
 
+	<script src="src/setting.js"></script>
 	<script src="src/main.js"></script>
 </body>
 </html>

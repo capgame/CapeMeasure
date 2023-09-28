@@ -1,35 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
 body{
 	font-family: 'Kosugi Maru';
+	text-align: center;
 }
 canvas{
 	border: 1px solid #000;
 }
-
-#video{
-	width: 1280px;
-}
-#canvas{
-	width: 1280px;
-}
-/* #cutcanvas{
-	width: 1280px;
-	image-rendering: pixelated;
-} */
-
-#cat{
-	width: 100px;
-}
-#answer{
-	font-size: 3em;
-	vertical-align: 50%;
-}
-
-.debug{
-	display: none;
-}
-
-#debugcanvas{
-	width: 720px;
-	image-rendering: pixelated;
+#canvas-full{
+	max-width: 1280px;
 }
