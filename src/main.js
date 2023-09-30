@@ -6,10 +6,30 @@ const OUTPUT_HEIGHT = 224;
 
 let app;
 
+
 window.onload = function(){
 	app = new App();
 	app.setting.adjust(35,21,1200,898);
 	// app.setting.adjust(0,0,871,672);
+
+	let settingButton = document.querySelector("#setting-button");
+	settingButton.addEventListener("click",() => {
+		if(app.setting.isOpen){
+			app.setting.close();
+			document.querySelector("#setting").style.display = "none";
+		}else{
+			app.setting.open(app.video);
+			document.querySelector("#setting").style.display = "block";
+		}
+	});
+	// let startButton = document.querySelector("#start-button");
+	// startButton.addEventListener("click",() => {
+	// 	app.loadVideo();
+	// });
+	// let stopButton = document.querySelector("#stop-button");
+	// stopButton.addEventListener("click",() => {
+	// 	app.stream.getTracks()[0].stop();
+	// });
 };
 
 class App{
@@ -19,55 +39,46 @@ class App{
 		this.currentTab = "main";	//"config" | "main"
 
 		this.video = document.querySelector("#video");
+		this.stream = null;
 
 		this.adjustedCanvas = document.querySelector("#canvas-adjusted-main");
 		this.adjustedContext = this.adjustedCanvas.getContext("2d",{willReadFrequently: true});
 		this.infoCanvas = document.querySelector("#canvas-info");
 		this.infoContext = this.infoCanvas.getContext("2d");
 
-		this.settingButton = document.querySelector("#setting-button");
-		this.settingButton.addEventListener("click",() => {
-			if(this.setting.isOpen){
-				this.setting.close();
-				document.querySelector("#setting").style.display = "none";
-			}else{
-				this.setting.open(this.video);
-				document.querySelector("#setting").style.display = "block";
-			}
-		});
+		this.infoContext.strokeStyle = "#ff0000";
+		this.infoContext.lineWidth = 2;
+		this.infoContext.font = "30px 'Kosugi Maru'"
+
+		this.history = [];
+		this.se = new Audio('assets/warning.mp3');
+		this.se.volume = 0.3;
 
 		this.init();
 	}
 	init(){
-		this.initVideo();
-		this.initCanvas();
+		this.loadVideo();
 		let loop = () => {
 			this.process();
 			setTimeout(loop,533 - Date.now() % 533);
 		};
 		loop();
 	}
-	initVideo(){
+	loadVideo(){
 		navigator.mediaDevices
 			.getUserMedia({
 				video: true,
 				audio: false,
 			})
 			.then((stream) => {
-				console.log(stream);
+				this.stream = stream;
 				this.video.srcObject = stream;
 				this.video.play();
 			}).catch(e => console.log(e));
 	}
-	initCanvas(){
-		this.infoContext.strokeStyle = "#ff0000";
-		this.infoContext.lineWidth = 2;
-		this.infoContext.font = "18px 'Kosugi Maru'";
-	}
 	process(){
 		this.adjustedContext.drawImage(this.video,...this.setting.screenRect,0,0,OUTPUT_WIDTH,OUTPUT_HEIGHT);
 		const info = this.main.measure(this.adjustedContext);
-		// console.log(info);
 		const c = this.infoContext;
 		const sourceSize = this.main.sourceSize;
 
@@ -78,20 +89,60 @@ class App{
 		for(let i = 1;i < 6;i++){	//枠線
 			c.fillRect(0,sourceSize.height * i,1100,2);
 		}
+		c.fillText("SPEED",OUTPUT_WIDTH + sourceSize.width + 30,32);
+
+		let reliableSpeeds = [];
 
 		for(let i = 1;i < 6;i++){
 			c.strokeRect(info.closestPixels[i].mostSimilarPos,sourceSize.height * i + 1,sourceSize.width,sourceSize.height);
-		
-			let isReliable = true;
 
 			const match = parseInt(info.closestPixels[i].similarity * 100);
 			const mono = parseInt(info.closestPixels[i].monochromaticity * 100);
 			const speed = info.closestPixels[i].expectedSpeed;
-			// this.infoContext.font = "18px 'Kosugi Maru'"
-			// c.fillText(`MATCH: ${match}%`,OUTPUT_WIDTH + sourceSize.width + 30,sourceSize.height * i + 55);
-			// c.fillText(` MONO: ${mono}%`,OUTPUT_WIDTH + sourceSize.width + 30,sourceSize.height * i + 75);
-			this.infoContext.font = "30px 'Kosugi Maru'"
-			c.fillText(speed,OUTPUT_WIDTH + sourceSize.width + 25,sourceSize.height * i + 32);
+			if(match < 90){
+				c.fillStyle = "#cccccc"
+				c.fillText(speed + "(s)",OUTPUT_WIDTH + sourceSize.width + 25,sourceSize.height * i + 32);
+				c.fillStyle = "#000000"
+			}else if(mono > 95){
+				c.fillStyle = "#cccccc"
+				c.fillText(speed + "(m)",OUTPUT_WIDTH + sourceSize.width + 25,sourceSize.height * i + 32);
+				c.fillStyle = "#000000"
+			}else{
+				c.fillText(speed,OUTPUT_WIDTH + sourceSize.width + 25,sourceSize.height * i + 32);
+				reliableSpeeds.push(speed);
+			}
+		}
+		
+		const getMode = (array) => {
+			const s = new Set(array);
+			let c = [];
+			for(const i of s){
+				const n = array.filter(v => v === i).length;
+				c.push([i,n]);
+			}
+			c = c.sort((a,b) => b[1] - a[1]);
+			if(c[0] == null || c[0][1] <= 1)
+				return -1;
+			return c[0][0];
+		}
+		const speed = getMode(reliableSpeeds);
+		if(speed === -1){
+			document.querySelector("#answer").innerText = "推定速度: -";
+		}else{
+			if(this.history.length > 10){
+				this.history.pop(speed);
+			}
+			
+			this.history.unshift(speed);
+			if(this.history[0] === 50 && this.history[1] === 50 && this.history[2] === 50 && this.history[3] !== 50){
+				console.log("3連続50");
+				if(document.querySelector("#se-input").checked){
+					this.se.currentTime = 0;
+					this.se.play();
+				}
+			}
+			document.querySelector("#answer").innerText = "推定速度: " + speed;
+			
 		}
 	}
 }

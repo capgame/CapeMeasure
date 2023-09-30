@@ -5,7 +5,17 @@ body{
 }
 canvas{
 	border: 1px solid #000;
+	margin-top: 20px;
 }
 #canvas-full{
+	width: 90%;
 	max-width: 1280px;
+}
+#canvas-adjusted-setting{
+	width: 90%;
+	max-width: 768px;
+	image-rendering: pixelated;
+}
+#answer{
+	font-size: 30px;
 }

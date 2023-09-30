@@ -13,28 +13,32 @@
 	<div id="app">
 		<div id="main">
 			<!-- <img id="cat" src="oosui.png"> -->
-			<span id="answer"></span>
+			<div id="answer"></div>
 			
 			<canvas id="canvas-info" width="500" height="224"></canvas>
-			<br>
-		
+			<br><br>
 			<canvas style="display: none;" id="canvas-adjusted-main" width="256" height="224"></canvas>
 		</div>
-		
-		<video style="display: none;" id="video" autoplay></video>
-		
+		<!-- <button type="button" id="start-button">START</button>
+		<button type="button" id="stop-button">STOP</button> -->
 		<button type="button" id="setting-button">設定</button>
+		
 		<div style="display: none;" id="setting">
+			<h3>効果音</h3>
+			<label>3回以上速度50が計測された場合に効果音を鳴らす <input id="se-input" type="checkbox"></label>
 			<h3>サイズ調整</h3>
 			<div id="size-input-wrap">
-				<canvas id="canvas-full" width="1920" height="1080"></canvas>
-				<canvas id="canvas-adjusted-setting" width="256" height="224"></canvas>
+				<p>下の動画をドラッグしてゲーム画面のみを正確に切り取ってください</p>
+				<canvas id="canvas-full" width="1920" height="1080"></canvas><br><br>
 				left:   <input type="number" oninput="app.setting.onInput()">
 				top:    <input type="number" oninput="app.setting.onInput()">
 				width:  <input type="number" oninput="app.setting.onInput()">
-				height: <input type="number" oninput="app.setting.onInput()">
+				height: <input type="number" oninput="app.setting.onInput()"><br>
+				<canvas id="canvas-adjusted-setting" width="256" height="224"></canvas><br>
 			</div>
 		</div>
+
+		<video style="display: none;" id="video" autoplay></video>
 	</div>
 
 	<script src="src/setting.js"></script>
