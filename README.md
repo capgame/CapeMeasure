@@ -9,11 +9,11 @@
 ### 画面調整
 設定ボタンから設定項目を開いたら、映像をドラッグアンドドロップしてゲーム画面のみを切り取ってください。
 
-![ドラッグアンドドロップで調整](/capgame/CapeMeasure/raw/main/docs/01_drag.gif) 
+![ドラッグアンドドロップで調整](https://raw.githubusercontent.com/capgame/CapeMeasure/main/docs/01_drag.gif) 
 
 入力バーで調整することもできます。
 
-![入力バーで調整](/capgame/CapeMeasure/raw/main/docs/02_input.gif) 
+![入力バーで調整](https://raw.githubusercontent.com/capgame/CapeMeasure/main/docs/02_input.gif) 
 
 この切り抜きはできるだけ**正確に**行ってください。
 
